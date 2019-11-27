@@ -7,6 +7,5 @@ namespace TestTask
         public long Id { get; set; }
         public string Title { get; set; }
         public Node parentNode { get; set; }
-        public List<Node> childrenNodes { get; set; }
     }
 }

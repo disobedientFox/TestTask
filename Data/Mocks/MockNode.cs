@@ -9,7 +9,9 @@ namespace TestTask
             get {
                 return new List<Node>
                 {
-                    new Node { Title = "First"}
+                    new Node { Title = "First"},
+                    new Node { Title = "Second"},
+                    new Node { Title = "Third"}
                 };
             }
         }

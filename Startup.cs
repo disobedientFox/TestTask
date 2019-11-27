@@ -16,7 +16,7 @@ namespace TestTask
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddTransient<INodesHelper, MockNode>();
+            services.AddTransient<INodesHelper, MockNode>(); // relate inteface to Mock class 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
