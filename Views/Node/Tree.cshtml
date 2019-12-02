@@ -1,0 +1,149 @@
+﻿@*<script src="~/js/tree.js"></script>*@
+
+<script>
+    function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+
+    console.log('moving element with id ' + data);
+    console.log('to element with id ' + ev.toElement.id);
+    update(data, ev.toElement.id);
+}
+
+function update(val1, val2) {
+    $.ajax({
+        url: '@Url.Action("ChangePosition", "Node")',
+        type: "POST",
+        data: { element: val1, into: val2 },
+        dataType: "json",
+        success: successFunc,
+        error: errorFunc
+    });
+}
+
+function successFunc() {
+    location.reload();
+}
+
+function expand(val) {
+    $.ajax({
+        url: '@Url.Action("SwitchExpand", "Node")',
+        type: "POST",
+        data: { id: val },
+        dataType: "json",
+        success: successFunc,
+        error: errorFunc
+    });
+}
+
+function deleteNode(val) {
+    $.ajax({
+        url: '@Url.Action("Delete", "Node")',
+        type: "DELETE",
+        data: { id: val },
+        dataType: "json",
+        success: successFunc,
+        error: errorFunc
+    });
+}
+
+function errorFunc() {
+    location.reload();
+}
+
+function confirmation(val) {
+    if (confirm('Are you sure you want to remove this node?')) {
+        deleteNode(val);
+    } else {
+        location.reload();
+    }
+}
+</script>
+
+
+<div id="null" class="row" style="margin-top: 100px">
+    <div class="col-8 align-items-center justify-content-center">
+
+        @{ foreach (var node in Model.AllNodes)
+            {
+                // Root nodes
+                <div class="row" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    @if (node.IsParent)
+                    {
+                        if (!node.IsExpanded)
+                        {
+                            <button class="btn btn-outline-secondary" style="width: 36px; height: 40px; margin: 3px" onclick="expand(@node.Id)">+</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-secondary" style="width: 36px; height: 40px; margin: 3px" onclick="expand(@node.Id)">-</button>
+                        }
+                    }
+                    else
+                    {
+                        <div style="margin-left:40px"></div>
+                    }
+
+                    <!--Title of the node-->
+                    <div draggable="true" ondragstart="drag(event)" style="margin: 3px; text-align: left" class="col btn btn-outline-secondary" id="@node.Id" slyle="">@node.Title</div>
+                    <!--Actions(Edit, Delete)-->
+                    <div style="margin: 3px">
+                        @Html.ActionLink("Edit", "edit", new { id = node.Id }, new { @class = "btn btn-outline-primary" })
+                    </div>
+                    <button class="btn btn-outline-danger" onclick="confirmation(@node.Id)" style="margin: 3px">Delete</button>
+                </div>
+
+                <!-- children of root nodes -->
+
+                foreach (var child in node.WholeChildrenList)
+                {
+                    <div class="row" ondrop="drop(event)" ondragover="allowDrop(event)">
+
+                        @{ for (int i = 0; i < child.Offset; i++)
+                            {
+                                <div style="margin-left:40px"></div>
+                            }
+                        }
+                        @if (child.IsParent)
+                        {
+                            if (!child.IsExpanded)
+                            {
+                                <button class="btn btn-outline-secondary" style="width: 36px; height: 40px; margin: 3px" onclick="expand(@child.Id)">+</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-secondary" style="width: 36px; height: 40px; margin: 3px" onclick="expand(@child.Id)">-</button>
+                            }
+                        }
+                        else
+                        {
+                            <div style="margin-left:40px"></div>
+                        }
+
+                        <!--Title of the node-->
+                        <div draggable="true" ondragstart="drag(event)" style="margin: 3px; text-align: left" class="col btn btn-outline-secondary" id="@child.Id">@child.Title</div>
+                        <!--Actions(Edit, Delete)-->
+                        <div style="margin: 3px">
+                            @Html.ActionLink("Edit", "edit", new { id = child.Id }, new { @class = "btn btn-outline-primary" })
+                        </div>
+                        <button class="btn btn-outline-danger" onclick="confirmation(@child.Id)" style="margin: 3px">Delete</button>
+                    </div>
+                }
+            };
+
+        }
+
+    </div>
+    <!-- Add button -->
+    <div class="col" style="margin: 3px">
+        @Html.ActionLink("Add", "add", null, null, new { @class = "btn btn btn-outline-success" })
+    </div>
+</div>
